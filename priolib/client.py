@@ -1,5 +1,6 @@
 import json
 import requests
+from typing import List
 
 from .model import Task
 
@@ -83,3 +84,27 @@ class APIClient:
             result.raise_for_status()
         except requests.exceptions.HTTPError:
             raise APIError
+
+    def list_tasks(self, start: int, count: int) -> List[Task]:
+        headers = {'Accept': 'application/json'}
+        result = requests.get(
+            url='{addr}/tasks'.format(addr=self.addr),
+            headers=headers,
+            verify=False,
+            timeout=DEFAULT_TIMEOUT,
+        )
+        try:
+            result.raise_for_status()
+        except requests.exceptions.HTTPError:
+            raise APIError
+
+        payload = result.json()
+
+        tasks = []
+        for item in payload['contents']:
+            tasks.append(Task(
+                id_=item['id'],
+                title=item['title'],
+                target=item['target'],
+            ))
+        return tasks
