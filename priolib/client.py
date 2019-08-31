@@ -1,6 +1,7 @@
 import json
 import requests
-from typing import List
+import retrying
+from typing import Dict, List, Optional, Tuple
 
 from .model import Task
 
@@ -8,100 +9,183 @@ from .model import Task
 DEFAULT_TIMEOUT = (3.05, 27)
 
 
-class APIError(Exception):
+class ConnectionError(Exception):
     pass
+
+
+class APIError(Exception):
+
+    def __init__(self, reason, message, details) -> None:
+        super().__init__(message)
+        self.reason = reason
+        self.details = details
+
+    @classmethod
+    def FromHTTPResponse(cls, response: requests.Response) -> 'APIError':
+        try:
+            error = response.json()
+            return cls(
+                reason=error['reason'],
+                message=error['message'],
+                details=error['details'],
+            )
+        except (ValueError, KeyError):
+            return cls(
+                reason=response.status_code,
+                message='Unknown error state encountered.',
+                details='Failure conditions may be transitional.',
+            )
+
+
+class HTTPClient:
+
+    def __init__(
+        self,
+        verify: bool,
+        timeout: Tuple[float, float] = DEFAULT_TIMEOUT,
+        retries: int = 0,
+    ) -> None:
+        self.verify = verify
+        self.timeout = timeout
+        self.retries = retries
+
+    def request(
+        self,
+        method: str,
+        url: str,
+        headers: Optional[Dict[str, str]] = None,
+        data: Optional[str] = None,
+    ) -> requests.Response:
+        """
+        Retry HTTP request on ``ConnectionError`` and ``HTTPError``s.
+        """
+        @retrying.retry(
+            stop_max_attempt_number=self.retries,
+            retry_on_exception=lambda e: isinstance(
+                e, requests.exceptions.ConnectionError)
+                or isinstance(e, requests.exceptions.HTTPError),
+        )
+        def do_request() -> requests.Response:
+            response = requests.request(
+                method=method,
+                url=url,
+                headers=headers,
+                data=data,
+                verify=self.verify,
+                timeout=self.timeout,
+            )
+            response.raise_for_status()
+            return response
+        return do_request()
 
 
 class APIClient:
 
-    def __init__(self, host: str, port: int = None) -> None:
-        if port:
-            self.addr = '{host}:{port}'.format(host=host, port=port)
-        else:
-            self.addr = host
+    def __init__(self, addr: str, retries: int = 3) -> None:
+        """
+        Set API client retry behavior.
+
+        """
+        self.addr = addr
+        self.http = HTTPClient(verify=False, retries=retries)
+
+    def request(
+        self,
+        method: str,
+        uri: str,
+        headers: Dict[str, str] = {},
+        data: Optional[str] = None,
+    ) -> requests.Response:
+        """
+        Retry on any HTTP error.
+
+        """
+        try:
+            return self.http.request(
+                method=method,
+                url=self.addr + uri,
+                headers=headers,
+                data=data,
+            )
+        except requests.exceptions.ConnectionError as exc:
+            raise ConnectionError from exc
+        except requests.exceptions.HTTPError as exc:
+            raise APIError.FromHTTPResponse(exc.response)
 
     def create_task(self, title: str, target: str) -> int:
-        headers = {'Content-Type': 'application/json'}
-        payload = {'title': title, 'target': target}
-        result = requests.post(
-            url='{addr}/tasks'.format(addr=self.addr),
-            headers=headers,
-            data=json.dumps(payload),
-            verify=False,
-            timeout=DEFAULT_TIMEOUT,
-        )
-        try:
-            result.raise_for_status()
-        except requests.exceptions.HTTPError:
-            raise APIError
+        """
+        Create a new task on the server.
 
-        task_location = result.headers['Location']
+        Raises:
+            APIError
+        """
+        response = self.request(
+            method='POST',
+            uri='/tasks',
+            headers={'Content-Type': 'application/json'},
+            data=json.dumps({'title': title, 'target': target}),
+        )
+        task_location = response.headers['Location']
         task_id = task_location.split('/')[-1]
         return int(task_id)
 
     def get_task(self, task_id: int) -> Task:
-        headers = {'Accept': 'application/json'}
-        result = requests.get(
-            url='{addr}/tasks/{id_}'.format(addr=self.addr, id_=task_id),
-            headers=headers,
-            verify=False,
-            timeout=DEFAULT_TIMEOUT,
-        )
-        try:
-            result.raise_for_status()
-        except requests.exceptions.HTTPError:
-            raise APIError
+        """
+        Retrieve task from server by task ID.
 
-        payload = result.json()
-        t = Task(
+        Raises:
+            APIError
+        """
+        response = self.request(
+            method='GET',
+            uri='/tasks/{id_}'.format(id_=task_id),
+            headers={'Accept': 'application/json'},
+        )
+        payload = response.json()
+        return Task(
             id_=payload['id'],
             title=payload['title'],
             target=payload['target'],
         )
-        return t
 
     def delete_task(self, task_id: int) -> None:
-        result = requests.delete(
-            url='{addr}/tasks/{id_}'.format(addr=self.addr, id_=task_id),
-            verify=False,
-            timeout=DEFAULT_TIMEOUT,
-        )
-        try:
-            result.raise_for_status()
-        except requests.exceptions.HTTPError:
-            raise APIError
+        """
+        Delete task by ID.
+
+        Raises:
+            APIError
+        """
+        self.request('DELETE', '/tasks/{id_}'.format(id_=task_id))
 
     def update_task(self, task: Task) -> None:
-        headers = {'Content-Type': 'application/json'}
-        result = requests.patch(
-            url='{addr}/tasks/{id_}'.format(addr=self.addr, id_=task.id),
-            headers=headers,
+        """
+        Update task identified by the task ID of the given task object.
+
+        Raises:
+            APIError
+        """
+        self.request(
+            method='PATCH',
+            uri='/tasks/{id_}'.format(id_=task.id),
+            headers={'Content-Type': 'application/json'},
             data=task.toJSON(),
-            verify=False,
-            timeout=DEFAULT_TIMEOUT,
         )
-        try:
-            result.raise_for_status()
-        except requests.exceptions.HTTPError:
-            raise APIError
 
     def list_tasks(self, start: int, count: int) -> List[Task]:
-        headers = {'Accept': 'application/json'}
-        result = requests.get(
-            url='{addr}/tasks'.format(addr=self.addr),
-            headers=headers,
-            verify=False,
-            timeout=DEFAULT_TIMEOUT,
+        """
+        List tasks `count` number of tasks at a time paged from
+        `start` index of all available tasks to list.
+
+        Raises:
+            APIError
+        """
+        response = self.request(
+            method='GET',
+            uri='/tasks',
+            headers={'Accept': 'application/json'},
         )
-        try:
-            result.raise_for_status()
-        except requests.exceptions.HTTPError:
-            raise APIError
-
-        payload = result.json()
-
         tasks = []
-        for item in payload['contents']:
+        for item in response.json()['contents']:
             tasks.append(Task(
                 id_=item['id'],
                 title=item['title'],
