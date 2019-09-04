@@ -139,7 +139,7 @@ class APIClient:
         """
         response = self.request(
             method='GET',
-            uri='/tasks/{id_}'.format(id_=task_id),
+            uri=f'/tasks/{task_id}',
             headers={'Accept': 'application/json'},
         )
         payload = response.json()
@@ -156,7 +156,7 @@ class APIClient:
         Raises:
             APIError
         """
-        self.request('DELETE', '/tasks/{id_}'.format(id_=task_id))
+        self.request('DELETE', f'/tasks/{task_id}')
 
     def update_task(self, task: Task) -> None:
         """
@@ -167,7 +167,7 @@ class APIClient:
         """
         self.request(
             method='PATCH',
-            uri='/tasks/{id_}'.format(id_=task.id),
+            uri=f'/tasks/{task.id}',
             headers={'Content-Type': 'application/json'},
             data=task.toJSON(),
         )
