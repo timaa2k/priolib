@@ -20,12 +20,13 @@ class TestAPIClient:
             headers={'Location': f'{api.addr}/tasks/0'},
             status=HTTPStatus.CREATED.value,
         )
-        api.create_task(
+        task_id = api.create_task(
             title='First task',
             target='https://example.com',
         )
         assert len(responses.calls) == 1
         assert responses.calls[0].request.url == f'{api.addr}/tasks'
+        assert task_id == 0
 
     @responses.activate
     def test_create_task_failed(self, api):

@@ -126,8 +126,11 @@ class APIClient:
             headers={'Content-Type': 'application/json'},
             data=json.dumps({'title': title, 'target': target}),
         )
+        print(response)
         task_location = response.headers['Location']
+        print(task_location)
         task_id = task_location.split('/')[-1]
+        print(task_id)
         return int(task_id)
 
     def get_task(self, task_id: int) -> Task:
