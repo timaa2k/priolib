@@ -16,8 +16,9 @@ class ConnectionError(Exception):
 class APIError(Exception):
 
     def __init__(self, reason, message, details) -> None:
-        super().__init__(message)
+        super().__init__()
         self.reason = reason
+        self.message = message
         self.details = details
 
     @classmethod
