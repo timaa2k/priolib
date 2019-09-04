@@ -10,14 +10,14 @@ class TestAPIClient:
 
     @pytest.fixture()
     def api(self) -> 'APIClient':
-        return APIClient(addr='https://taskpr.io')
+        return APIClient(addr='https://api.taskpr.io')
 
     @responses.activate
     def test_create_task(self, api):
         responses.add(
             method=responses.POST,
-            url='https://taskpr.io/tasks',
-            headers={'Location': 'https://taskpr.io/tasks/0'},
+            url=f'{api.addr}/tasks',
+            headers={'Location': f'{api.addr}/tasks/0'},
             status=HTTPStatus.CREATED.value,
         )
         api.create_task(
@@ -25,13 +25,13 @@ class TestAPIClient:
             target='https://example.com',
         )
         assert len(responses.calls) == 1
-        assert responses.calls[0].request.url == 'https://taskpr.io/tasks'
+        assert responses.calls[0].request.url == f'{api.addr}/tasks'
 
     @responses.activate
     def test_create_task_failed(self, api):
         responses.add(
             method=responses.POST,
-            url='https://taskpr.io/tasks',
+            url=f'{api.addr}/tasks',
             json={
                 'reason': 'Internal Server Error',
                 'message': 'Task could not be created.',
@@ -45,7 +45,7 @@ class TestAPIClient:
                 target='https://example.com',
             )
         assert len(responses.calls) == 3
-        assert responses.calls[0].request.url == 'https://taskpr.io/tasks'
+        assert responses.calls[0].request.url == f'{api.addr}/tasks'
         assert exc.value.reason == 'Internal Server Error'
         assert exc.value.message == 'Task could not be created.'
         assert exc.value.details == 'A task storage error occurred.'
@@ -54,10 +54,10 @@ class TestAPIClient:
     def test_get_task(self, api):
         responses.add(
             method=responses.GET,
-            url='https://taskpr.io/tasks/0',
+            url=f'{api.addr}/tasks/0',
             json={
                 'kind': 'Task',
-                'self': 'https://taskpr.io/tasks/0',
+                'self': f'{api.addr}/tasks/0',
                 'id': 0,
                 'title': 'First task',
                 'target': 'https://example.com',
@@ -66,7 +66,7 @@ class TestAPIClient:
         )
         task = api.get_task(task_id=0)
         assert len(responses.calls) == 1
-        assert responses.calls[0].request.url == 'https://taskpr.io/tasks/0'
+        assert responses.calls[0].request.url == f'{api.addr}/tasks/0'
         assert task.id == 0
         assert task.title == 'First task'
         assert task.target == 'https://example.com'
@@ -75,7 +75,7 @@ class TestAPIClient:
     def test_get_task_failed(self, api):
         responses.add(
             method=responses.GET,
-            url='https://taskpr.io/tasks/0',
+            url=f'{api.addr}/tasks/0',
             json={
                 'reason': 'Not Found',
                 'message': 'Task not found.',
@@ -86,7 +86,7 @@ class TestAPIClient:
         with pytest.raises(APIError) as exc:
             api.get_task(task_id=0)
         assert len(responses.calls) == 3
-        assert responses.calls[0].request.url == 'https://taskpr.io/tasks/0'
+        assert responses.calls[0].request.url == f'{api.addr}/tasks/0'
         assert exc.value.reason == 'Not Found'
         assert exc.value.message == 'Task not found.'
         assert exc.value.details == 'Task does not exist in task storage.'
@@ -95,18 +95,18 @@ class TestAPIClient:
     def test_delete_task(self, api):
         responses.add(
             method=responses.DELETE,
-            url='https://taskpr.io/tasks/0',
+            url=f'{api.addr}/tasks/0',
             status=HTTPStatus.NO_CONTENT.value,
         )
         api.delete_task(task_id=0)
         assert len(responses.calls) == 1
-        assert responses.calls[0].request.url == 'https://taskpr.io/tasks/0'
+        assert responses.calls[0].request.url == f'{api.addr}/tasks/0'
 
     @responses.activate
     def test_delete_task_failed(self, api):
         responses.add(
             method=responses.DELETE,
-            url='https://taskpr.io/tasks/0',
+            url=f'{api.addr}/tasks/0',
             json={
                 'reason': 'Internal Server Error',
                 'message': 'Task could not be deleted.',
@@ -117,7 +117,7 @@ class TestAPIClient:
         with pytest.raises(APIError) as exc:
             api.delete_task(task_id=0)
         assert len(responses.calls) == 3
-        assert responses.calls[0].request.url == 'https://taskpr.io/tasks/0'
+        assert responses.calls[0].request.url == f'{api.addr}/tasks/0'
         assert exc.value.reason == 'Internal Server Error'
         assert exc.value.message == 'Task could not be deleted.'
         assert exc.value.details == 'A task storage error occurred.'
@@ -126,19 +126,19 @@ class TestAPIClient:
     def test_update_task(self, api):
         responses.add(
             method=responses.PATCH,
-            url='https://taskpr.io/tasks/0',
+            url=f'{api.addr}/tasks/0',
             status=HTTPStatus.NO_CONTENT.value,
         )
         updated = Task(id_=0, title='Updated task', target='https://new.com')
         api.update_task(task=updated)
         assert len(responses.calls) == 1
-        assert responses.calls[0].request.url == 'https://taskpr.io/tasks/0'
+        assert responses.calls[0].request.url == f'{api.addr}/tasks/0'
 
     @responses.activate
     def test_update_task_failed(self, api):
         responses.add(
             method=responses.PATCH,
-            url='https://taskpr.io/tasks/0',
+            url=f'{api.addr}/tasks/0',
             json={
                 'reason': 'Internal Server Error',
                 'message': 'Task could not be updated.',
@@ -150,7 +150,7 @@ class TestAPIClient:
         with pytest.raises(APIError) as exc:
             api.update_task(task=updated)
         assert len(responses.calls) == 3
-        assert responses.calls[0].request.url == 'https://taskpr.io/tasks/0'
+        assert responses.calls[0].request.url == f'{api.addr}/tasks/0'
         assert exc.value.reason == 'Internal Server Error'
         assert exc.value.message == 'Task could not be updated.'
         assert exc.value.details == 'A task storage error occurred.'
@@ -159,22 +159,22 @@ class TestAPIClient:
     def test_list_tasks(self, api):
         responses.add(
             method=responses.GET,
-            url='https://taskpr.io/tasks',
+            url=f'{api.addr}/tasks',
             json={
                 'kind': 'Collection',
-                'self': 'https://taskpr.io/tasks',
+                'self': f'{api.addr}/tasks',
                 'contents': [
                     {
                         'id': 2,
                         'kind': 'Task',
-                        'self': 'https://taskpr.io/tasks/2',
+                        'self': f'{api.addr}/tasks/2',
                         'target': 'https://swiss.com',
                         'title': 'Buy cheese',
                     },
                     {
                         'id': 3,
                         'kind': 'Task',
-                        'self': 'https://taskpr.io/tasks/3',
+                        'self': f'{api.addr}/tasks/3',
                         'target': 'https://stuff.org',
                         'title': 'Do stuff',
                     },
@@ -185,7 +185,7 @@ class TestAPIClient:
 
         tasks = api.list_tasks(start=2, count=2)
         assert len(responses.calls) == 1
-        assert responses.calls[0].request.url == 'https://taskpr.io/tasks'
+        assert responses.calls[0].request.url == f'{api.addr}/tasks'
 
         assert len(tasks) == 2
         assert tasks[0].id == 2
@@ -199,7 +199,7 @@ class TestAPIClient:
     def test_list_tasks_failed(self, api):
         responses.add(
             method=responses.GET,
-            url='https://taskpr.io/tasks',
+            url=f'{api.addr}/tasks',
             json={
                 'reason': 'Internal Server Error',
                 'message': 'Task could not be retrieved.',
@@ -210,9 +210,7 @@ class TestAPIClient:
         with pytest.raises(APIError) as exc:
             api.list_tasks(start=0, count=2)
         assert len(responses.calls) == 3
-        assert responses.calls[0].request.url == 'https://taskpr.io/tasks'
+        assert responses.calls[0].request.url == f'{api.addr}/tasks'
         assert exc.value.reason == 'Internal Server Error'
         assert exc.value.message == 'Task could not be retrieved.'
         assert exc.value.details == 'A task storage error occurred.'
-
-
