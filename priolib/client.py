@@ -185,7 +185,7 @@ class APIClient:
         """
         response = self.request(
             method='GET',
-            uri='/tasks',
+            uri=f'/tasks?start={start}&count={count}',
             headers={'Accept': 'application/json'},
         )
         tasks = []
