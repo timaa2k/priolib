@@ -54,6 +54,7 @@ class HTTPClient:
         self,
         method: str,
         url: str,
+        params: Optional[Dict[str, str]] = None,
         headers: Optional[Dict[str, str]] = None,
         data: Optional[str] = None,
     ) -> requests.Response:
@@ -70,6 +71,7 @@ class HTTPClient:
             response = requests.request(
                 method=method,
                 url=url,
+                params=params,
                 headers=headers,
                 data=data,
                 verify=self.verify,
@@ -94,6 +96,7 @@ class APIClient:
         self,
         method: str,
         uri: str,
+        params: Dict[str, str] = {},
         headers: Dict[str, str] = {},
         data: Optional[str] = None,
     ) -> requests.Response:
@@ -105,6 +108,7 @@ class APIClient:
             return self.http.request(
                 method=method,
                 url=self.addr + uri,
+                params=params,
                 headers=headers,
                 data=data,
             )
@@ -113,7 +117,7 @@ class APIClient:
         except requests.exceptions.HTTPError as exc:
             raise APIError.FromHTTPResponse(exc.response)
 
-    def create_task(self, title: str, target: str) -> int:
+    def create_task(self, title: str, target: str) -> str:
         """
         Create a new task on the server.
 
@@ -126,14 +130,11 @@ class APIClient:
             headers={'Content-Type': 'application/json'},
             data=json.dumps({'title': title, 'target': target}),
         )
-        print(response)
         task_location = response.headers['Location']
-        print(task_location)
         task_id = task_location.split('/')[-1]
-        print(task_id)
-        return int(task_id)
+        return task_id
 
-    def get_task(self, task_id: int) -> Task:
+    def get_task(self, task_id: str) -> Task:
         """
         Retrieve task from server by task ID.
 
@@ -152,7 +153,7 @@ class APIClient:
             target=payload['target'],
         )
 
-    def delete_task(self, task_id: int) -> None:
+    def delete_task(self, task_id: str) -> None:
         """
         Delete task by ID.
 
@@ -175,7 +176,11 @@ class APIClient:
             data=task.toJSON(),
         )
 
-    def list_tasks(self, start: int, count: int) -> List[Task]:
+    def list_tasks(
+        self,
+        start: Optional[int] = None,
+        count: Optional[int] = None,
+    ) -> List[Task]:
         """
         List tasks `count` number of tasks at a time paged from
         `start` index of all available tasks to list.
@@ -183,9 +188,15 @@ class APIClient:
         Raises:
             APIError
         """
+        params = {}
+        if start is not None:
+            params["start"] = str(start)
+        if count is not None:
+            params["count"] = str(count)
         response = self.request(
             method='GET',
-            uri=f'/tasks?start={start}&count={count}',
+            uri='/tasks',
+            params=params,
             headers={'Accept': 'application/json'},
         )
         tasks = []
