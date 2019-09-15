@@ -1,6 +1,8 @@
+import datetime
+import uuid
+
 import pytest
 import responses
-import uuid
 from http import HTTPStatus
 
 from priolib.client import APIClient, APIError
@@ -11,19 +13,12 @@ def generate_task_id() -> str:
     return str(uuid.uuid4())
 
 
-def generate_task_time() -> str:
-    return '1937-01-01T12:00:27.87+00:20'
-
 
 class TestAPIClient:
 
     @pytest.fixture()
     def test_id(self) -> str:
         return generate_task_id()
-
-    @pytest.fixture()
-    def test_time(self) -> str:
-        return generate_task_time()
 
     @pytest.fixture()
     def api(self) -> 'APIClient':
@@ -69,15 +64,15 @@ class TestAPIClient:
         assert exc.value.details == 'A task storage error occurred.'
 
     @responses.activate
-    def test_get_task(self, api, test_id, test_time):
+    def test_get_task(self, api, test_id):
         responses.add(
             method=responses.GET,
             url=f'{api.addr}/tasks/{test_id}',
             json={
-                'createdDate': test_time,
+                'createdDate': '2007-01-25T12:00:00Z',
                 'id': test_id,
                 'kind': 'Task',
-                'modifiedDate': test_time,
+                'modifiedDate': '2007-01-25T12:00:00Z',
                 'selfLink': f'{api.addr}/tasks/{test_id}',
                 'title': 'First task',
                 'targetLink': 'https://example.com',
@@ -92,8 +87,10 @@ class TestAPIClient:
         assert task.title == 'First task'
         assert task.target == 'https://example.com'
         assert task.urgency == 'Later'
-        assert task.created == test_time
-        assert task.modified == test_time
+        assert task.created == datetime.datetime(
+            2007, 1, 25, 12, 0, tzinfo=datetime.timezone.utc)
+        assert task.modified == datetime.datetime(
+            2007, 1, 25, 12, 0, tzinfo=datetime.timezone.utc)
 
     @responses.activate
     def test_get_task_failed(self, api, test_id):
@@ -147,7 +144,7 @@ class TestAPIClient:
         assert exc.value.details == 'A task storage error occurred.'
 
     @responses.activate
-    def test_update_task(self, api, test_id, test_time):
+    def test_update_task(self, api, test_id):
         responses.add(
             method=responses.PATCH,
             url=f'{api.addr}/tasks/{test_id}',
@@ -163,7 +160,7 @@ class TestAPIClient:
         assert responses.calls[0].request.url == f'{api.addr}/tasks/{test_id}'
 
     @responses.activate
-    def test_update_task_failed(self, api, test_id, test_time):
+    def test_update_task_failed(self, api, test_id):
         responses.add(
             method=responses.PATCH,
             url=f'{api.addr}/tasks/{test_id}',
@@ -188,7 +185,7 @@ class TestAPIClient:
         assert exc.value.details == 'A task storage error occurred.'
 
     @responses.activate
-    def test_list_tasks(self, api, test_time):
+    def test_list_tasks(self, api):
         id_1 = generate_task_id()
         id_2 = generate_task_id()
         responses.add(
@@ -199,20 +196,20 @@ class TestAPIClient:
                 'self': f'{api.addr}/tasks',
                 'contents': [
                     {
-                        'createdDate': test_time,
+                        'createdDate': '2007-01-25T12:00:00Z',
                         'id': id_1,
                         'kind': 'Task',
-                        'modifiedDate': test_time,
+                        'modifiedDate': '2007-01-25T12:00:00Z',
                         'selfLink': f'{api.addr}/tasks/{id_1}',
                         'targetLink': 'https://swiss.com',
                         'title': 'Buy cheese',
                         'urgencyLevel': 'Later',
                     },
                     {
-                        'createdDate': test_time,
+                        'createdDate': '2007-01-25T12:00:00Z',
                         'id': id_2,
                         'kind': 'Task',
-                        'modifiedDate': test_time,
+                        'modifiedDate': '2007-01-25T12:00:00Z',
                         'selfLink': f'{api.addr}/tasks/{id_2}',
                         'targetLink': 'https://stuff.org',
                         'title': 'Do stuff',
@@ -233,14 +230,18 @@ class TestAPIClient:
         assert tasks[0].title == 'Buy cheese'
         assert tasks[0].target == 'https://swiss.com'
         assert tasks[0].urgency == 'Later'
-        assert tasks[0].created == test_time
-        assert tasks[0].modified == test_time
+        assert tasks[0].created == datetime.datetime(
+            2007, 1, 25, 12, 0, tzinfo=datetime.timezone.utc)
+        assert tasks[0].modified == datetime.datetime(
+            2007, 1, 25, 12, 0, tzinfo=datetime.timezone.utc)
         assert tasks[1].id == id_2
         assert tasks[1].title == 'Do stuff'
         assert tasks[1].target == 'https://stuff.org'
         assert tasks[1].urgency == 'Today'
-        assert tasks[1].created == test_time
-        assert tasks[1].modified == test_time
+        assert tasks[1].created == datetime.datetime(
+            2007, 1, 25, 12, 0, tzinfo=datetime.timezone.utc)
+        assert tasks[1].modified == datetime.datetime(
+            2007, 1, 25, 12, 0, tzinfo=datetime.timezone.utc)
 
     @responses.activate
     def test_list_tasks_failed(self, api):

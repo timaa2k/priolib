@@ -11,14 +11,12 @@ class TestTask:
             title='bar',
             target='baz',
             urgency='foo',
-            created='bar',
-            modified='baz',
+            created='2007-01-25T12:00:00Z',
+            modified='2007-01-25T12:00:00Z',
         )
         json = (
             '{'
-            '"createdDate": "bar", '
             '"id": "foo", '
-            '"modifiedDate": "baz", '
             '"targetLink": "baz", '
             '"title": "bar", '
             '"urgencyLevel": "foo"'

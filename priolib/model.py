@@ -1,5 +1,6 @@
 from typing import Optional
 
+import iso8601
 import json
 
 
@@ -7,9 +8,9 @@ class Task:
 
     def __init__(
         self,
-        id_: int,
-        title: str,
-        target: str,
+        id_: str,
+        title: Optional[str] = None,
+        target: Optional[str] = None,
         urgency: Optional[str] = None,
         created: Optional[str] = None,
         modified: Optional[str] = None,
@@ -18,8 +19,8 @@ class Task:
         self.title = title
         self.target = target
         self.urgency = urgency
-        self.created = created
-        self.modified = modified
+        self.created = iso8601.parse_date(created) if created else None
+        self.modified = iso8601.parse_date(modified) if modified else None
 
     def __str__(self) -> str:
         return f'({self.id}, {self.title}, {self.target}, {self.urgency}, {self.created}, {self.modified})'
@@ -27,12 +28,10 @@ class Task:
     def toJSON(self):
         o = {}
         o['id'] = self.id
-        o['title'] = self.title
-        o['targetLink'] = self.target
-        if self.urgency is not None:
+        if self.title:
+            o['title'] = self.title
+        if self.target:
+            o['targetLink'] = self.target
+        if self.urgency:
             o['urgencyLevel'] = self.urgency
-        if self.urgency is not None:
-            o['createdDate'] = self.created
-        if self.urgency is not None:
-            o['modifiedDate'] = self.modified
         return json.dumps(obj=o, sort_keys=True)
