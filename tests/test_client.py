@@ -11,11 +11,19 @@ def generate_task_id() -> str:
     return str(uuid.uuid4())
 
 
+def generate_task_time() -> str:
+    return '1937-01-01T12:00:27.87+00:20'
+
+
 class TestAPIClient:
 
     @pytest.fixture()
     def test_id(self) -> str:
         return generate_task_id()
+
+    @pytest.fixture()
+    def test_time(self) -> str:
+        return generate_task_time()
 
     @pytest.fixture()
     def api(self) -> 'APIClient':
@@ -31,7 +39,7 @@ class TestAPIClient:
         )
         task_id = api.create_task(
             title='First task',
-            targetLink='https://example.com',
+            target='https://example.com',
         )
         assert len(responses.calls) == 1
         assert responses.calls[0].request.url == f'{api.addr}/tasks'
@@ -52,7 +60,7 @@ class TestAPIClient:
         with pytest.raises(APIError) as exc:
             api.create_task(
                 title='First task',
-                targetLink='https://example.com',
+                target='https://example.com',
             )
         assert len(responses.calls) == 3
         assert responses.calls[0].request.url == f'{api.addr}/tasks'
@@ -61,16 +69,19 @@ class TestAPIClient:
         assert exc.value.details == 'A task storage error occurred.'
 
     @responses.activate
-    def test_get_task(self, api, test_id):
+    def test_get_task(self, api, test_id, test_time):
         responses.add(
             method=responses.GET,
             url=f'{api.addr}/tasks/{test_id}',
             json={
-                'kind': 'Task',
-                'self': f'{api.addr}/tasks/{test_id}',
+                'createdDate': test_time,
                 'id': test_id,
+                'kind': 'Task',
+                'modifiedDate': test_time,
+                'selfLink': f'{api.addr}/tasks/{test_id}',
                 'title': 'First task',
                 'targetLink': 'https://example.com',
+                'urgencyLevel': 'Todo',
             },
             status=HTTPStatus.OK.value,
         )
@@ -79,7 +90,10 @@ class TestAPIClient:
         assert responses.calls[0].request.url == f'{api.addr}/tasks/{test_id}'
         assert task.id == test_id
         assert task.title == 'First task'
-        assert task.targetLink == 'https://example.com'
+        assert task.target == 'https://example.com'
+        assert task.urgency == 'Todo'
+        assert task.created == test_time
+        assert task.modified == test_time
 
     @responses.activate
     def test_get_task_failed(self, api, test_id):
@@ -133,19 +147,26 @@ class TestAPIClient:
         assert exc.value.details == 'A task storage error occurred.'
 
     @responses.activate
-    def test_update_task(self, api, test_id):
+    def test_update_task(self, api, test_id, test_time):
         responses.add(
             method=responses.PATCH,
             url=f'{api.addr}/tasks/{test_id}',
             status=HTTPStatus.NO_CONTENT.value,
         )
-        updated = Task(id_=test_id, title='Updated task', targetLink='https://new.com')
+        updated = Task(
+            id_=test_id,
+            title='Updated task',
+            target='https://new.com',
+            urgency='Later',
+            created=test_time,
+            modified=test_time,
+        )
         api.update_task(task=updated)
         assert len(responses.calls) == 1
         assert responses.calls[0].request.url == f'{api.addr}/tasks/{test_id}'
 
     @responses.activate
-    def test_update_task_failed(self, api, test_id):
+    def test_update_task_failed(self, api, test_id, test_time):
         responses.add(
             method=responses.PATCH,
             url=f'{api.addr}/tasks/{test_id}',
@@ -159,7 +180,10 @@ class TestAPIClient:
         updated = Task(
             id_=test_id,
             title='Updated task',
-            targetLink='https://new.com',
+            target='https://new.com',
+            urgency='Later',
+            created=test_time,
+            modified=test_time,
         )
         with pytest.raises(APIError) as exc:
             api.update_task(task=updated)
@@ -170,7 +194,7 @@ class TestAPIClient:
         assert exc.value.details == 'A task storage error occurred.'
 
     @responses.activate
-    def test_list_tasks(self, api):
+    def test_list_tasks(self, api, test_time):
         id_1 = generate_task_id()
         id_2 = generate_task_id()
         responses.add(
@@ -181,18 +205,24 @@ class TestAPIClient:
                 'self': f'{api.addr}/tasks',
                 'contents': [
                     {
+                        'createdDate': test_time,
                         'id': id_1,
                         'kind': 'Task',
-                        'self': f'{api.addr}/tasks/{id_1}',
+                        'modifiedDate': test_time,
+                        'selfLink': f'{api.addr}/tasks/{id_1}',
                         'targetLink': 'https://swiss.com',
                         'title': 'Buy cheese',
+                        'urgencyLevel': 'Later',
                     },
                     {
+                        'createdDate': test_time,
                         'id': id_2,
                         'kind': 'Task',
-                        'self': f'{api.addr}/tasks/{id_2}',
+                        'modifiedDate': test_time,
+                        'selfLink': f'{api.addr}/tasks/{id_2}',
                         'targetLink': 'https://stuff.org',
                         'title': 'Do stuff',
+                        'urgencyLevel': 'Today',
                     },
                 ],
             },
@@ -201,15 +231,22 @@ class TestAPIClient:
 
         tasks = api.list_tasks(start=2, count=2)
         assert len(responses.calls) == 1
-        assert responses.calls[0].request.url == f'{api.addr}/tasks?start=2&count=2'
+        url = f'{api.addr}/tasks?start=2&count=2'
+        assert responses.calls[0].request.url == url
 
         assert len(tasks) == 2
         assert tasks[0].id == id_1
         assert tasks[0].title == 'Buy cheese'
-        assert tasks[0].targetLink == 'https://swiss.com'
+        assert tasks[0].target == 'https://swiss.com'
+        assert tasks[0].urgency == 'Later'
+        assert tasks[0].created == test_time
+        assert tasks[0].modified == test_time
         assert tasks[1].id == id_2
         assert tasks[1].title == 'Do stuff'
-        assert tasks[1].targetLink == 'https://stuff.org'
+        assert tasks[1].target == 'https://stuff.org'
+        assert tasks[1].urgency == 'Today'
+        assert tasks[1].created == test_time
+        assert tasks[1].modified == test_time
 
     @responses.activate
     def test_list_tasks_failed(self, api):

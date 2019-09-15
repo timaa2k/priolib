@@ -117,7 +117,7 @@ class APIClient:
         except requests.exceptions.HTTPError as exc:
             raise APIError.FromHTTPResponse(exc.response)
 
-    def create_task(self, title: str, targetLink: str) -> str:
+    def create_task(self, title: str, target: str) -> str:
         """
         Create a new task on the server.
 
@@ -128,7 +128,7 @@ class APIClient:
             method='POST',
             uri='/tasks',
             headers={'Content-Type': 'application/json'},
-            data=json.dumps({'title': title, 'targetLink': targetLink}),
+            data=json.dumps({'title': title, 'targetLink': target}),
         )
         task_location = response.headers['Location']
         task_id = task_location.split('/')[-1]
@@ -150,7 +150,10 @@ class APIClient:
         return Task(
             id_=payload['id'],
             title=payload['title'],
-            targetLink=payload['targetLink'],
+            target=payload['targetLink'],
+            urgency=payload['urgencyLevel'],
+            created=payload['createdDate'],
+            modified=payload['modifiedDate'],
         )
 
     def delete_task(self, task_id: str) -> None:
@@ -204,6 +207,9 @@ class APIClient:
             tasks.append(Task(
                 id_=item['id'],
                 title=item['title'],
-                targetLink=item['targetLink'],
+                target=item['targetLink'],
+                urgency=item['urgencyLevel'],
+                created=item['createdDate'],
+                modified=item['modifiedDate'],
             ))
         return tasks
