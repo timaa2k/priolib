@@ -3,10 +3,13 @@ import json
 
 class Task:
 
-    def __init__(self, id_: int, title: str, target: str) -> None:
+    def __init__(self, id_: int, title: str, targetLink: str) -> None:
         self.id = id_
         self.title = title
-        self.target = target
+        self.targetLink = targetLink
+
+    def __str__(self) -> str:
+        return f'({self.id}, {self.title}, {self.targetLink})'
 
     def toJSON(self):
         return json.dumps(

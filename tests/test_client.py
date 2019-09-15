@@ -31,7 +31,7 @@ class TestAPIClient:
         )
         task_id = api.create_task(
             title='First task',
-            target='https://example.com',
+            targetLink='https://example.com',
         )
         assert len(responses.calls) == 1
         assert responses.calls[0].request.url == f'{api.addr}/tasks'
@@ -52,7 +52,7 @@ class TestAPIClient:
         with pytest.raises(APIError) as exc:
             api.create_task(
                 title='First task',
-                target='https://example.com',
+                targetLink='https://example.com',
             )
         assert len(responses.calls) == 3
         assert responses.calls[0].request.url == f'{api.addr}/tasks'
@@ -70,7 +70,7 @@ class TestAPIClient:
                 'self': f'{api.addr}/tasks/{test_id}',
                 'id': test_id,
                 'title': 'First task',
-                'target': 'https://example.com',
+                'targetLink': 'https://example.com',
             },
             status=HTTPStatus.OK.value,
         )
@@ -79,7 +79,7 @@ class TestAPIClient:
         assert responses.calls[0].request.url == f'{api.addr}/tasks/{test_id}'
         assert task.id == test_id
         assert task.title == 'First task'
-        assert task.target == 'https://example.com'
+        assert task.targetLink == 'https://example.com'
 
     @responses.activate
     def test_get_task_failed(self, api, test_id):
@@ -139,7 +139,7 @@ class TestAPIClient:
             url=f'{api.addr}/tasks/{test_id}',
             status=HTTPStatus.NO_CONTENT.value,
         )
-        updated = Task(id_=test_id, title='Updated task', target='https://new.com')
+        updated = Task(id_=test_id, title='Updated task', targetLink='https://new.com')
         api.update_task(task=updated)
         assert len(responses.calls) == 1
         assert responses.calls[0].request.url == f'{api.addr}/tasks/{test_id}'
@@ -159,7 +159,7 @@ class TestAPIClient:
         updated = Task(
             id_=test_id,
             title='Updated task',
-            target='https://new.com',
+            targetLink='https://new.com',
         )
         with pytest.raises(APIError) as exc:
             api.update_task(task=updated)
@@ -184,14 +184,14 @@ class TestAPIClient:
                         'id': id_1,
                         'kind': 'Task',
                         'self': f'{api.addr}/tasks/{id_1}',
-                        'target': 'https://swiss.com',
+                        'targetLink': 'https://swiss.com',
                         'title': 'Buy cheese',
                     },
                     {
                         'id': id_2,
                         'kind': 'Task',
                         'self': f'{api.addr}/tasks/{id_2}',
-                        'target': 'https://stuff.org',
+                        'targetLink': 'https://stuff.org',
                         'title': 'Do stuff',
                     },
                 ],
@@ -206,10 +206,10 @@ class TestAPIClient:
         assert len(tasks) == 2
         assert tasks[0].id == id_1
         assert tasks[0].title == 'Buy cheese'
-        assert tasks[0].target == 'https://swiss.com'
+        assert tasks[0].targetLink == 'https://swiss.com'
         assert tasks[1].id == id_2
         assert tasks[1].title == 'Do stuff'
-        assert tasks[1].target == 'https://stuff.org'
+        assert tasks[1].targetLink == 'https://stuff.org'
 
     @responses.activate
     def test_list_tasks_failed(self, api):
