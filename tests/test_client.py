@@ -81,7 +81,7 @@ class TestAPIClient:
                 'selfLink': f'{api.addr}/tasks/{test_id}',
                 'title': 'First task',
                 'targetLink': 'https://example.com',
-                'urgencyLevel': 'Todo',
+                'urgencyLevel': 'Later',
             },
             status=HTTPStatus.OK.value,
         )
@@ -91,7 +91,7 @@ class TestAPIClient:
         assert task.id == test_id
         assert task.title == 'First task'
         assert task.target == 'https://example.com'
-        assert task.urgency == 'Todo'
+        assert task.urgency == 'Later'
         assert task.created == test_time
         assert task.modified == test_time
 
@@ -157,9 +157,6 @@ class TestAPIClient:
             id_=test_id,
             title='Updated task',
             target='https://new.com',
-            urgency='Later',
-            created=test_time,
-            modified=test_time,
         )
         api.update_task(task=updated)
         assert len(responses.calls) == 1
@@ -181,9 +178,6 @@ class TestAPIClient:
             id_=test_id,
             title='Updated task',
             target='https://new.com',
-            urgency='Later',
-            created=test_time,
-            modified=test_time,
         )
         with pytest.raises(APIError) as exc:
             api.update_task(task=updated)

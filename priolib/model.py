@@ -1,3 +1,5 @@
+from typing import Optional
+
 import json
 
 
@@ -8,9 +10,9 @@ class Task:
         id_: int,
         title: str,
         target: str,
-        urgency: str,
-        created: str,
-        modified: str,
+        urgency: Optional[str] = None,
+        created: Optional[str] = None,
+        modified: Optional[str] = None,
     ) -> None:
         self.id = id_
         self.title = title
@@ -27,7 +29,10 @@ class Task:
         o['id'] = self.id
         o['title'] = self.title
         o['targetLink'] = self.target
-        o['urgencyLevel'] = self.urgency
-        o['createdDate'] = self.created
-        o['modifiedDate'] = self.modified
+        if self.urgency is not None:
+            o['urgencyLevel'] = self.urgency
+        if self.urgency is not None:
+            o['createdDate'] = self.created
+        if self.urgency is not None:
+            o['modifiedDate'] = self.modified
         return json.dumps(obj=o, sort_keys=True)
