@@ -23,8 +23,11 @@ class Task:
         return f'({self.id}, {self.title}, {self.target}, {self.urgency}, {self.created}, {self.modified})'
 
     def toJSON(self):
-        return json.dumps(
-            self,
-            default=lambda o: o.__dict__,
-            sort_keys=True,
-        )
+        o = {}
+        o['id'] = self.id
+        o['title'] = self.title
+        o['targetLink'] = self.target
+        o['urgencyLevel'] = self.urgency
+        o['createdDate'] = self.created
+        o['modifiedDate'] = self.modified
+        return json.dumps(obj=o, sort_keys=True)

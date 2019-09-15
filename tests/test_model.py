@@ -16,12 +16,12 @@ class TestTask:
         )
         json = (
             '{'
-            '"created": "bar", '
+            '"createdDate": "bar", '
             '"id": "foo", '
-            '"modified": "baz", '
-            '"target": "baz", '
+            '"modifiedDate": "baz", '
+            '"targetLink": "baz", '
             '"title": "bar", '
-            '"urgency": "foo"'
+            '"urgencyLevel": "foo"'
             '}'
         )
         assert json == t.toJSON()
