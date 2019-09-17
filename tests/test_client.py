@@ -76,7 +76,7 @@ class TestAPIClient:
                 'selfLink': f'{api.addr}/tasks/{test_id}',
                 'title': 'First task',
                 'targetLink': 'https://example.com',
-                'urgencyLevel': 'Later',
+                'status': 'Later',
             },
             status=HTTPStatus.OK.value,
         )
@@ -86,7 +86,7 @@ class TestAPIClient:
         assert task.id == test_id
         assert task.title == 'First task'
         assert task.target == 'https://example.com'
-        assert task.urgency == 'Later'
+        assert task.status == 'Later'
         assert task.created == datetime.datetime(
             2007, 1, 25, 12, 0, tzinfo=datetime.timezone.utc)
         assert task.modified == datetime.datetime(
@@ -203,7 +203,7 @@ class TestAPIClient:
                         'selfLink': f'{api.addr}/tasks/{id_1}',
                         'targetLink': 'https://swiss.com',
                         'title': 'Buy cheese',
-                        'urgencyLevel': 'Later',
+                        'status': 'Later',
                     },
                     {
                         'createdDate': '2007-01-25T12:00:00Z',
@@ -213,7 +213,7 @@ class TestAPIClient:
                         'selfLink': f'{api.addr}/tasks/{id_2}',
                         'targetLink': 'https://stuff.org',
                         'title': 'Do stuff',
-                        'urgencyLevel': 'Today',
+                        'status': 'Today',
                     },
                 ],
             },
@@ -229,7 +229,7 @@ class TestAPIClient:
         assert tasks[0].id == id_1
         assert tasks[0].title == 'Buy cheese'
         assert tasks[0].target == 'https://swiss.com'
-        assert tasks[0].urgency == 'Later'
+        assert tasks[0].status == 'Later'
         assert tasks[0].created == datetime.datetime(
             2007, 1, 25, 12, 0, tzinfo=datetime.timezone.utc)
         assert tasks[0].modified == datetime.datetime(
@@ -237,7 +237,7 @@ class TestAPIClient:
         assert tasks[1].id == id_2
         assert tasks[1].title == 'Do stuff'
         assert tasks[1].target == 'https://stuff.org'
-        assert tasks[1].urgency == 'Today'
+        assert tasks[1].status == 'Today'
         assert tasks[1].created == datetime.datetime(
             2007, 1, 25, 12, 0, tzinfo=datetime.timezone.utc)
         assert tasks[1].modified == datetime.datetime(

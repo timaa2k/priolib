@@ -151,7 +151,7 @@ class APIClient:
             id_=payload['id'],
             title=payload['title'],
             target=payload['targetLink'],
-            urgency=payload['urgencyLevel'],
+            status=payload['status'],
             created=payload['createdDate'],
             modified=payload['modifiedDate'],
         )
@@ -208,7 +208,7 @@ class APIClient:
                 id_=item['id'],
                 title=item['title'],
                 target=item['targetLink'],
-                urgency=item['urgencyLevel'],
+                status=item['status'],
                 created=item['createdDate'],
                 modified=item['modifiedDate'],
             ))

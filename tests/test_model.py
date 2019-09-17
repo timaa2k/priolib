@@ -10,16 +10,16 @@ class TestTask:
             id_='foo',
             title='bar',
             target='baz',
-            urgency='foo',
+            status='foo',
             created='2007-01-25T12:00:00Z',
             modified='2007-01-25T12:00:00Z',
         )
         json = (
             '{'
             '"id": "foo", '
+            '"status": "foo", '
             '"targetLink": "baz", '
-            '"title": "bar", '
-            '"urgencyLevel": "foo"'
+            '"title": "bar"'
             '}'
         )
         assert json == t.toJSON()
