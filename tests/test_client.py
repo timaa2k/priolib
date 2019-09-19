@@ -190,7 +190,7 @@ class TestAPIClient:
         id_2 = generate_task_id()
         responses.add(
             method=responses.GET,
-            url=f'{api.addr}/tasks?start=2&count=2',
+            url=f'{api.addr}/tasks',
             json={
                 'kind': 'Collection',
                 'self': f'{api.addr}/tasks',
@@ -220,9 +220,9 @@ class TestAPIClient:
             status=HTTPStatus.OK.value,
         )
 
-        tasks = api.list_tasks(start=2, count=2)
+        tasks = api.list_tasks()
         assert len(responses.calls) == 1
-        url = f'{api.addr}/tasks?start=2&count=2'
+        url = f'{api.addr}/tasks'
         assert responses.calls[0].request.url == url
 
         assert len(tasks) == 2

@@ -179,27 +179,17 @@ class APIClient:
             data=task.toJSON(),
         )
 
-    def list_tasks(
-        self,
-        start: Optional[int] = None,
-        count: Optional[int] = None,
-    ) -> List[Task]:
+    def list_tasks(self) -> List[Task]:
         """
-        List tasks `count` number of tasks at a time paged from
-        `start` index of all available tasks to list.
+        List tasks ordered descending by creation date.
 
         Raises:
             APIError
         """
-        params = {}
-        if start is not None:
-            params["start"] = str(start)
-        if count is not None:
-            params["count"] = str(count)
         response = self.request(
             method='GET',
             uri='/tasks',
-            params=params,
+            params={},
             headers={'Accept': 'application/json'},
         )
         tasks = []
