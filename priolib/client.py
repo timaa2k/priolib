@@ -117,18 +117,24 @@ class APIClient:
         except requests.exceptions.HTTPError as exc:
             raise APIError.FromHTTPResponse(exc.response)
 
-    def create_task(self, title: str, target: str) -> str:
+    def create_task(
+        self,
+        title: str,
+        target: str,
+        status: Optional[str] = '',
+    ) -> str:
         """
         Create a new task on the server.
 
         Raises:
             APIError
         """
+        payload = {'title': title, 'targetLink': target, 'status': status}
         response = self.request(
             method='POST',
             uri='/tasks',
             headers={'Content-Type': 'application/json'},
-            data=json.dumps({'title': title, 'targetLink': target}),
+            data=json.dumps(payload),
         )
         task_location = response.headers['Location']
         task_id = task_location.split('/')[-1]

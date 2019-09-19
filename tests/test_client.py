@@ -35,6 +35,7 @@ class TestAPIClient:
         task_id = api.create_task(
             title='First task',
             target='https://example.com',
+            status='Today',
         )
         assert len(responses.calls) == 1
         assert responses.calls[0].request.url == f'{api.addr}/tasks'
