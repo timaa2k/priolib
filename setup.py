@@ -5,7 +5,7 @@ with open("README.rst", "r") as fh:
 
 setuptools.setup(
     name="priolib",
-    version="0.0.1",
+    version="0.1.0",
     author="Tim Weidner",
     author_email="timaa2k@gmail.com",
     description="TaskPrio client library",
