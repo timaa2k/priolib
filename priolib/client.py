@@ -3,7 +3,7 @@ import requests
 import retrying
 from typing import Dict, List, Optional, Tuple
 
-from .model import Task
+from .model import Plan, Task
 
 
 DEFAULT_TIMEOUT = (3.05, 27)
@@ -153,14 +153,7 @@ class APIClient:
             headers={'Accept': 'application/json'},
         )
         payload = response.json()
-        return Task(
-            id_=payload['id'],
-            title=payload['title'],
-            target=payload['targetLink'],
-            status=payload['status'],
-            created=payload['createdDate'],
-            modified=payload['modifiedDate'],
-        )
+        return Task.unmarshal_json(payload)
 
     def delete_task(self, task_id: str) -> None:
         """
@@ -182,7 +175,7 @@ class APIClient:
             method='PATCH',
             uri=f'/tasks/{task.id}',
             headers={'Content-Type': 'application/json'},
-            data=task.toJSON(),
+            data=task.marshal_json(),
         )
 
     def list_tasks(self) -> List[Task]:
@@ -200,12 +193,20 @@ class APIClient:
         )
         tasks = []
         for item in response.json()['contents']:
-            tasks.append(Task(
-                id_=item['id'],
-                title=item['title'],
-                target=item['targetLink'],
-                status=item['status'],
-                created=item['createdDate'],
-                modified=item['modifiedDate'],
-            ))
+            tasks.append(Task.unmarshal_json(item))
         return tasks
+
+    def get_plan(self) -> Plan:
+        """
+        Get plan with tasks ordered by priority and status.
+
+        Raises:
+            APIError
+        """
+        response = self.request(
+            method='GET',
+            uri='/plan',
+            params={},
+            headers={'Accept': 'application/json'},
+        )
+        return Plan.unmarshal_json(response.json())
