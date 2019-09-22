@@ -26,7 +26,9 @@ class Task:
         self.modified = iso8601.parse_date(modified) if modified else None
 
     def get_age_days(self) -> str:
-        return str(datetime.datetime.now().day - self.modified.day) + 'd'
+        if self.modified.day is not None:
+            return str(datetime.datetime.now().day - self.modified.day) + 'd'
+        return ''
 
     def __str__(self) -> str:
         return f'({self.id}, {self.title}, {self.target}, {self.status}, {self.priority}, {self.created}, {self.modified})'
