@@ -175,7 +175,7 @@ class APIClient:
             method='PATCH',
             uri=f'/tasks/{task.id}',
             headers={'Content-Type': 'application/json'},
-            data=task.marshal_json(),
+            data=json.dumps(task, cls=Encoder, sort_keys=True),
         )
 
     def list_tasks(self) -> List[Task]:
