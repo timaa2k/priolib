@@ -1,12 +1,13 @@
+import json
 import datetime
 
-from priolib.model import Task
+import priolib.model
 
 
 class TestTask:
 
     def test_marshal_json(self) -> None:
-        t = Task(
+        t = priolib.model.Task(
             id_='foo',
             title='bar',
             target='baz',
@@ -15,7 +16,7 @@ class TestTask:
             created='2007-01-25T12:00:00Z',
             modified='2007-01-25T12:00:00Z',
         )
-        json = (
+        json_repr = (
             '{'
             '"id": "foo", '
             '"priority": 1, '
@@ -24,7 +25,7 @@ class TestTask:
             '"title": "bar"'
             '}'
         )
-        assert json == t.marshal_json()
+        assert json_repr == json.dumps(t, cls=priolib.model.Encoder, sort_keys=True)
 
     def test_unmarshal_json(self) -> None:
         json = {}  # type = Dict[str, Any]
@@ -35,7 +36,7 @@ class TestTask:
         json['priority'] = 1
         json['createdDate'] = '2007-01-25T12:00:00Z'
         json['modifiedDate'] = '2007-01-25T12:00:00Z'
-        task = Task.unmarshal_json(json)
+        task = priolib.model.Task.unmarshal_json(json)
         assert task.id == json['id']
         assert task.title == json['title']
         assert task.target == json['targetLink']
@@ -49,5 +50,26 @@ class TestTask:
 
 class TestPlan:
 
+    # FIXME: Add tests for plan
     def test_unmarshal_json(self) -> None:
+        pass
+
+    def test_marshal_json(self) -> None:
+        t = priolib.model.Task(
+            id_='foo',
+            title='bar',
+            target='baz',
+            status='foo',
+            priority=1,
+            created='2007-01-25T12:00:00Z',
+            modified='2007-01-25T12:00:00Z',
+        )
+        p = priolib.model.Plan(
+            done=[t],
+            today=[t],
+            todo=[t],
+            blocked=[t],
+            later=[t],
+        )
+        print(json.dumps(p, cls=priolib.model.Encoder, sort_keys=True))
         pass

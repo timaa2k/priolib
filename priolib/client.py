@@ -3,7 +3,7 @@ import requests
 import retrying
 from typing import Dict, List, Optional, Tuple
 
-from .model import Plan, Task
+from .model import Encoder, Plan, Task
 
 
 DEFAULT_TIMEOUT = (3.05, 27)
@@ -210,3 +210,19 @@ class APIClient:
             headers={'Accept': 'application/json'},
         )
         return Plan.unmarshal_json(response.json())
+
+    def update_plan(self, plan: Plan) -> None:
+        """
+        Update plan with changed task status and priorities.
+
+        Raises:
+            APIError
+        """
+        self.request(
+            method='POST',
+            uri='/plan',
+            params={},
+            headers={'Content-Type': 'application/json'},
+            data=json.dumps(plan, cls=Encoder, sort_keys=True),
+        )
+        # FIXME: Check exact status code on each request

@@ -1,4 +1,3 @@
-import datetime
 from typing import Any, Dict, List, Optional
 
 import iso8601
@@ -25,11 +24,6 @@ class Task:
         self.created = iso8601.parse_date(created) if created else None
         self.modified = iso8601.parse_date(modified) if modified else None
 
-    def get_age_days(self) -> str:
-        if self.modified is not None:
-            return str(datetime.datetime.now().day - self.modified.day) + 'd'
-        return ''
-
     def __str__(self) -> str:
         return f'({self.id}, {self.title}, {self.target}, {self.status}, {self.priority}, {self.created}, {self.modified})'
 
@@ -44,7 +38,7 @@ class Task:
             o['status'] = self.status
         if self.priority:
             o['priority'] = self.priority
-        return json.dumps(obj=o, sort_keys=True)
+        return o
 
     @classmethod
     def unmarshal_json(cls, json: Dict[str, Any]) -> 'Task':
@@ -52,7 +46,7 @@ class Task:
             id_=json['id'],
             title=json['title'],
             target=json['targetLink'],
-            status=json['status'],
+            status=json ['status'],
             priority=json['priority'],
             created=json['createdDate'],
             modified=json['modifiedDate'],
@@ -95,3 +89,21 @@ class Plan:
             else:
                 raise ValueError
         return plan
+
+    def marshal_json(self):
+        o = {}
+        o['done'] = self.done
+        o['today'] = self.today
+        o['todo'] = self.todo
+        o['blocked'] = self.blocked
+        o['later'] = self.later
+        return o
+
+
+class Encoder(json.JSONEncoder):
+
+    def default(self, obj) -> None:
+        if hasattr(obj, 'marshal_json'):
+            return obj.marshal_json()
+        else:
+            return json.JSONEncoder.default(self, obj)
