@@ -52,7 +52,46 @@ class TestPlan:
 
     # FIXME: Add tests for plan
     def test_unmarshal_json(self) -> None:
-        pass
+        json = {}  # type = Dict[str, Any]
+        json['contents'] = [
+            {
+                'status': 'Done',
+                'contents': [
+                    {
+                        'id': 'foo',
+                        'title': 'bar',
+                        'targetLink': 'baz',
+                        'status': 'Done',
+                        'priority': 1,
+                        'createdDate': '2007-01-25T12:00:00Z',
+                        'modifiedDate': '2007-01-25T12:00:00Z',
+                    },
+                ],
+            },
+            {
+                'status': 'Today',
+                'contents': [],
+            },
+            {
+                'status': 'Todo',
+                'contents': [],
+            },
+            {
+                'status': 'Blocked',
+                'contents': [],
+            },
+            {
+                'status': 'Later',
+                'contents': [],
+            },
+        ]
+        plan = priolib.model.Plan.unmarshal_json(json)
+        assert len(plan.done) == 1
+        assert plan.done[0].status == 'Done'
+        assert len(plan.today) == 0
+        assert len(plan.todo) == 0
+        assert len(plan.blocked) == 0
+        assert len(plan.later) == 0
 
     def test_marshal_json(self) -> None:
         t = priolib.model.Task(
@@ -66,10 +105,15 @@ class TestPlan:
         )
         p = priolib.model.Plan(
             done=[t],
-            today=[t],
-            todo=[t],
-            blocked=[t],
-            later=[t],
+            today=[],
+            todo=[],
+            blocked=[],
+            later=[],
         )
-        print(json.dumps(p, cls=priolib.model.Encoder, sort_keys=True))
-        pass
+        json_repr = json.dumps(p, cls=priolib.model.Encoder, sort_keys=True)
+        expected = (
+            '{"blocked": [], "done": [{"id": "foo", '
+            '"priority": 1, "status": "foo", "targetLink": "baz", '
+            '"title": "bar"}], "later": [], "today": [], "todo": []}'
+        )
+        assert json_repr == expected

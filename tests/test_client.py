@@ -6,7 +6,7 @@ import responses
 from http import HTTPStatus
 
 from priolib.client import APIClient, APIError
-from priolib.model import Task
+from priolib.model import Plan, Task
 
 
 def generate_task_id() -> str:
@@ -398,3 +398,39 @@ class TestAPIClient:
         assert plan.blocked[0].id == id_4
         assert len(plan.later) == 1
         assert plan.later[0].id == id_5
+
+    @responses.activate
+    def test_update_plan(self, api) -> None:
+        id_ = generate_task_id()
+        responses.add(
+            method=responses.POST,
+            url=f'{api.addr}/plan',
+            json={
+                'done': [
+                    {
+                        'id': id_,
+                        'priority': 1,
+                        'targetLink': 'https://swiss.com',
+                        'title': 'Buy cheese',
+                        'status': 'Done',
+                    },
+                ],
+                'today': [],
+                'todo': [],
+                'blocked': [],
+                'later': [],
+            },
+            status=HTTPStatus.NO_CONTENT.value,
+        )
+        t = Task(
+            id_=id_,
+            title='Buy cheese',
+            target='https://swiss.com',
+            status='Done',
+            priority=1,
+        )
+        p = Plan([t], [], [], [], [])
+        api.update_plan(p)
+        assert len(responses.calls) == 1
+        url = f'{api.addr}/plan'
+        assert responses.calls[0].request.url == url
