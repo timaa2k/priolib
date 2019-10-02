@@ -20,12 +20,11 @@ class Task:
         self.title = title
         self.target = target
         self.status = status
-        self.priority = priority
         self.created = iso8601.parse_date(created) if created else None
         self.modified = iso8601.parse_date(modified) if modified else None
 
     def __str__(self) -> str:
-        return f'({self.id}, {self.title}, {self.target}, {self.status}, {self.priority}, {self.created}, {self.modified})'
+        return f'({self.id}, {self.title}, {self.target}, {self.status}, {self.created}, {self.modified})'
 
     def marshal_json(self):
         o = {}
@@ -36,8 +35,6 @@ class Task:
             o['targetLink'] = self.target
         if self.status:
             o['status'] = self.status
-        if self.priority:
-            o['priority'] = self.priority
         return o
 
     @classmethod
@@ -47,7 +44,6 @@ class Task:
             title=json['title'],
             target=json['targetLink'],
             status=json ['status'],
-            priority=json['priority'],
             created=json['createdDate'],
             modified=json['modifiedDate'],
         )

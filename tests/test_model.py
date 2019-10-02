@@ -12,14 +12,12 @@ class TestTask:
             title='bar',
             target='baz',
             status='foo',
-            priority=1,
             created='2007-01-25T12:00:00Z',
             modified='2007-01-25T12:00:00Z',
         )
         json_repr = (
             '{'
             '"id": "foo", '
-            '"priority": 1, '
             '"status": "foo", '
             '"targetLink": "baz", '
             '"title": "bar"'
@@ -33,7 +31,6 @@ class TestTask:
         json['title'] = 'bar'
         json['targetLink'] = 'baz'
         json['status'] = 'foo'
-        json['priority'] = 1
         json['createdDate'] = '2007-01-25T12:00:00Z'
         json['modifiedDate'] = '2007-01-25T12:00:00Z'
         task = priolib.model.Task.unmarshal_json(json)
@@ -41,7 +38,6 @@ class TestTask:
         assert task.title == json['title']
         assert task.target == json['targetLink']
         assert task.status == json['status']
-        assert task.priority == json['priority']
         assert task.created == datetime.datetime(
             2007, 1, 25, 12, 0, tzinfo=datetime.timezone.utc)
         assert task.modified == datetime.datetime(
@@ -62,7 +58,6 @@ class TestPlan:
                         'title': 'bar',
                         'targetLink': 'baz',
                         'status': 'Done',
-                        'priority': 1,
                         'createdDate': '2007-01-25T12:00:00Z',
                         'modifiedDate': '2007-01-25T12:00:00Z',
                     },
@@ -99,7 +94,6 @@ class TestPlan:
             title='bar',
             target='baz',
             status='foo',
-            priority=1,
             created='2007-01-25T12:00:00Z',
             modified='2007-01-25T12:00:00Z',
         )
@@ -113,7 +107,7 @@ class TestPlan:
         json_repr = json.dumps(p, cls=priolib.model.Encoder, sort_keys=True)
         expected = (
             '{"blocked": [], "done": [{"id": "foo", '
-            '"priority": 1, "status": "foo", "targetLink": "baz", '
+            '"status": "foo", "targetLink": "baz", '
             '"title": "bar"}], "later": [], "today": [], "todo": []}'
         )
         assert json_repr == expected

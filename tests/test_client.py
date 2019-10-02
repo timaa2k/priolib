@@ -74,7 +74,6 @@ class TestAPIClient:
                 'id': test_id,
                 'kind': 'Task',
                 'modifiedDate': '2007-01-25T12:00:00Z',
-                'priority': 1,
                 'selfLink': f'{api.addr}/tasks/{test_id}',
                 'title': 'First task',
                 'targetLink': 'https://example.com',
@@ -89,7 +88,6 @@ class TestAPIClient:
         assert task.title == 'First task'
         assert task.target == 'https://example.com'
         assert task.status == 'Later'
-        assert task.priority == 1
         assert task.created == datetime.datetime(
             2007, 1, 25, 12, 0, tzinfo=datetime.timezone.utc)
         assert task.modified == datetime.datetime(
@@ -203,7 +201,6 @@ class TestAPIClient:
                         'id': id_1,
                         'kind': 'Task',
                         'modifiedDate': '2007-01-25T12:00:00Z',
-                        'priority': 1,
                         'selfLink': f'{api.addr}/tasks/{id_1}',
                         'targetLink': 'https://swiss.com',
                         'title': 'Buy cheese',
@@ -214,7 +211,6 @@ class TestAPIClient:
                         'id': id_2,
                         'kind': 'Task',
                         'modifiedDate': '2007-01-25T12:00:00Z',
-                        'priority': 1,
                         'selfLink': f'{api.addr}/tasks/{id_2}',
                         'targetLink': 'https://stuff.org',
                         'title': 'Do stuff',
@@ -233,7 +229,6 @@ class TestAPIClient:
         assert tasks[0].title == 'Buy cheese'
         assert tasks[0].target == 'https://swiss.com'
         assert tasks[0].status == 'Later'
-        assert tasks[0].priority == 1
         assert tasks[0].created == datetime.datetime(
             2007, 1, 25, 12, 0, tzinfo=datetime.timezone.utc)
         assert tasks[0].modified == datetime.datetime(
@@ -242,7 +237,6 @@ class TestAPIClient:
         assert tasks[1].title == 'Do stuff'
         assert tasks[1].target == 'https://stuff.org'
         assert tasks[1].status == 'Today'
-        assert tasks[1].priority == 1
         assert tasks[1].created == datetime.datetime(
             2007, 1, 25, 12, 0, tzinfo=datetime.timezone.utc)
         assert tasks[1].modified == datetime.datetime(
@@ -292,7 +286,6 @@ class TestAPIClient:
                                 'id': id_1,
                                 'kind': 'Task',
                                 'modifiedDate': '2007-01-25T12:00:00Z',
-                                'priority': 1,
                                 'selfLink': f'{api.addr}/tasks/{id_1}',
                                 'targetLink': 'https://swiss.com',
                                 'title': 'Buy cheese',
@@ -303,7 +296,6 @@ class TestAPIClient:
                                 'id': id_6,
                                 'kind': 'Task',
                                 'modifiedDate': '2007-01-25T12:00:00Z',
-                                'priority': 2,
                                 'selfLink': f'{api.addr}/tasks/{id_1}',
                                 'targetLink': 'https://swiss.com',
                                 'title': 'Buy cheese',
@@ -320,7 +312,6 @@ class TestAPIClient:
                                 'id': id_2,
                                 'kind': 'Task',
                                 'modifiedDate': '2007-01-25T12:00:00Z',
-                                'priority': 1,
                                 'selfLink': f'{api.addr}/tasks/{id_1}',
                                 'targetLink': 'https://swiss.com',
                                 'title': 'Buy cheese',
@@ -337,7 +328,6 @@ class TestAPIClient:
                                 'id': id_3,
                                 'kind': 'Task',
                                 'modifiedDate': '2007-01-25T12:00:00Z',
-                                'priority': 1,
                                 'selfLink': f'{api.addr}/tasks/{id_1}',
                                 'targetLink': 'https://swiss.com',
                                 'title': 'Buy cheese',
@@ -354,7 +344,6 @@ class TestAPIClient:
                                 'id': id_4,
                                 'kind': 'Task',
                                 'modifiedDate': '2007-01-25T12:00:00Z',
-                                'priority': 1,
                                 'selfLink': f'{api.addr}/tasks/{id_1}',
                                 'targetLink': 'https://swiss.com',
                                 'title': 'Buy cheese',
@@ -371,7 +360,6 @@ class TestAPIClient:
                                 'id': id_5,
                                 'kind': 'Task',
                                 'modifiedDate': '2007-01-25T12:00:00Z',
-                                'priority': 1,
                                 'selfLink': f'{api.addr}/tasks/{id_1}',
                                 'targetLink': 'https://swiss.com',
                                 'title': 'Buy cheese',
@@ -409,7 +397,6 @@ class TestAPIClient:
                 'done': [
                     {
                         'id': id_,
-                        'priority': 1,
                         'targetLink': 'https://swiss.com',
                         'title': 'Buy cheese',
                         'status': 'Done',
@@ -427,7 +414,6 @@ class TestAPIClient:
             title='Buy cheese',
             target='https://swiss.com',
             status='Done',
-            priority=1,
         )
         p = Plan([t], [], [], [], [])
         api.update_plan(p)
