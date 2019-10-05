@@ -64,8 +64,8 @@ class HTTPClient:
         @retrying.retry(
             stop_max_attempt_number=self.retries,
             retry_on_exception=lambda e: isinstance(
-                e, requests.exceptions.ConnectionError)
-                or isinstance(e, requests.exceptions.HTTPError),
+                e, requests.exceptions.ConnectionError) or isinstance(
+                    e, requests.exceptions.HTTPError),
         )
         def do_request() -> requests.Response:
             response = requests.request(

@@ -43,7 +43,7 @@ class Task:
             id_=json['id'],
             title=json['title'],
             target=json['targetLink'],
-            status=json ['status'],
+            status=json['status'],
             created=json['createdDate'],
             modified=json['modifiedDate'],
         )
