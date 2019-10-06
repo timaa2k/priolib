@@ -24,7 +24,7 @@ class TestAPIClient:
         return APIClient(addr='https://api.taskpr.io')
 
     @responses.activate
-    def test_create_task(self, api, test_id):
+    def test_create_task(self, api: APIClient, test_id: str) -> None:
         responses.add(
             method=responses.POST,
             url=f'{api.addr}/tasks',
@@ -41,7 +41,7 @@ class TestAPIClient:
         assert task_id == test_id
 
     @responses.activate
-    def test_create_task_failed(self, api) -> None:
+    def test_create_task_failed(self, api: APIClient) -> None:
         responses.add(
             method=responses.POST,
             url=f'{api.addr}/tasks',
@@ -64,7 +64,7 @@ class TestAPIClient:
         assert exc.value.details == 'A task storage error occurred.'
 
     @responses.activate
-    def test_get_task(self, api, test_id):
+    def test_get_task(self, api: APIClient, test_id: str) -> None:
         responses.add(
             method=responses.GET,
             url=f'{api.addr}/tasks/{test_id}',
@@ -93,7 +93,7 @@ class TestAPIClient:
             2007, 1, 25, 12, 0, tzinfo=datetime.timezone.utc)
 
     @responses.activate
-    def test_get_task_failed(self, api, test_id):
+    def test_get_task_failed(self, api: APIClient, test_id: str) -> None:
         responses.add(
             method=responses.GET,
             url=f'{api.addr}/tasks/{test_id}',
@@ -113,7 +113,7 @@ class TestAPIClient:
         assert exc.value.details == 'Task does not exist in task storage.'
 
     @responses.activate
-    def test_delete_task(self, api, test_id):
+    def test_delete_task(self, api: APIClient, test_id: str) -> None:
         responses.add(
             method=responses.DELETE,
             url=f'{api.addr}/tasks/{test_id}',
@@ -124,7 +124,7 @@ class TestAPIClient:
         assert responses.calls[0].request.url == f'{api.addr}/tasks/{test_id}'
 
     @responses.activate
-    def test_delete_task_failed(self, api, test_id):
+    def test_delete_task_failed(self, api: APIClient, test_id: str) -> None:
         responses.add(
             method=responses.DELETE,
             url=f'{api.addr}/tasks/{test_id}',
@@ -144,7 +144,7 @@ class TestAPIClient:
         assert exc.value.details == 'A task storage error occurred.'
 
     @responses.activate
-    def test_update_task(self, api, test_id):
+    def test_update_task(self, api: APIClient, test_id: str) -> None:
         responses.add(
             method=responses.PATCH,
             url=f'{api.addr}/tasks/{test_id}',
@@ -160,7 +160,7 @@ class TestAPIClient:
         assert responses.calls[0].request.url == f'{api.addr}/tasks/{test_id}'
 
     @responses.activate
-    def test_update_task_failed(self, api, test_id):
+    def test_update_task_failed(self, api: APIClient, test_id: str) -> None:
         responses.add(
             method=responses.PATCH,
             url=f'{api.addr}/tasks/{test_id}',
@@ -185,7 +185,7 @@ class TestAPIClient:
         assert exc.value.details == 'A task storage error occurred.'
 
     @responses.activate
-    def test_list_tasks(self, api) -> None:
+    def test_list_tasks(self, api: APIClient) -> None:
         id_1 = generate_task_id()
         id_2 = generate_task_id()
         responses.add(
@@ -242,7 +242,7 @@ class TestAPIClient:
             2007, 1, 25, 12, 0, tzinfo=datetime.timezone.utc)
 
     @responses.activate
-    def test_list_tasks_failed(self, api) -> None:
+    def test_list_tasks_failed(self, api: APIClient) -> None:
         responses.add(
             method=responses.GET,
             url=f'{api.addr}/tasks',
@@ -262,7 +262,7 @@ class TestAPIClient:
         assert exc.value.details == 'A task storage error occurred.'
 
     @responses.activate
-    def test_get_plan(self, api) -> None:
+    def test_get_plan(self, api: APIClient) -> None:
         id_1 = generate_task_id()
         id_2 = generate_task_id()
         id_3 = generate_task_id()
@@ -387,7 +387,7 @@ class TestAPIClient:
         assert plan.later[0].id == id_5
 
     @responses.activate
-    def test_update_plan(self, api) -> None:
+    def test_update_plan(self, api: APIClient) -> None:
         id_ = generate_task_id()
         responses.add(
             method=responses.POST,

@@ -1,7 +1,8 @@
 import json
+from typing import Dict, List, Optional, Tuple, Union, Any
+
 import requests
 import retrying
-from typing import Dict, List, Optional, Tuple
 
 from .model import Encoder, Plan, Task
 
@@ -15,7 +16,7 @@ class ConnectionError(Exception):
 
 class APIError(Exception):
 
-    def __init__(self, reason, message, details) -> None:
+    def __init__(self, reason: str, message: str, details: str) -> None:
         super().__init__()
         self.reason = reason
         self.message = message
@@ -32,7 +33,7 @@ class APIError(Exception):
             )
         except (ValueError, KeyError):
             return cls(
-                reason=response.status_code,
+                reason=response.reason,
                 message='Unknown error state encountered.',
                 details='Failure conditions may be transitional.',
             )
@@ -57,7 +58,7 @@ class HTTPClient:
         params: Optional[Dict[str, str]] = None,
         headers: Optional[Dict[str, str]] = None,
         data: Optional[str] = None,
-    ) -> requests.Response:
+    ) -> Union[requests.Response, Any]:
         """
         Retry HTTP request on ``ConnectionError`` and ``HTTPError``s.
         """

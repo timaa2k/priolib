@@ -26,7 +26,7 @@ class Task:
     def __str__(self) -> str:
         return f'({self.id}, {self.title}, {self.target}, {self.status}, {self.created}, {self.modified})'
 
-    def marshal_json(self):
+    def marshal_json(self) -> Dict[str, Any]:
         o = {}
         o['id'] = self.id
         if self.title:
@@ -86,7 +86,7 @@ class Plan:
                 raise ValueError
         return plan
 
-    def marshal_json(self):
+    def marshal_json(self) -> Dict[str, Any]:
         o = {}
         o['done'] = self.done
         o['today'] = self.today
@@ -98,7 +98,7 @@ class Plan:
 
 class Encoder(json.JSONEncoder):
 
-    def default(self, obj) -> None:
+    def default(self, obj: Any) -> Any:
         if hasattr(obj, 'marshal_json'):
             return obj.marshal_json()
         else:
