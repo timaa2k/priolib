@@ -226,4 +226,3 @@ class APIClient:
             headers={'Content-Type': 'application/json'},
             data=json.dumps(plan, cls=Encoder, sort_keys=True),
         )
-        # FIXME: Check exact status code on each request
